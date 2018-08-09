@@ -5,6 +5,7 @@ from sklearn import preprocessing , cross_validation
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
 import pickle as pc
+import os
 
 df = quandl.get("WIKI/GOOGL")
 df = df[["Adj. Open","Adj. High","Adj. Low", "Adj. Close","Adj. Volume"]]
@@ -29,8 +30,9 @@ X_train,X_test,Y_train,Y_test = cross_validation.train_test_split(X_val,Y_val,te
 linear = LinearRegression()
 linear.fit(X_train,Y_train)
 
-with open("linearregression.pickle","wb") as f:
-    pc.dump(linear,f)
+if not os.path.exists("linearregression.pickle"):
+    with open("linearregression.pickle","wb") as f:
+        pc.dump(linear,f)
 
 pickle_load = open("linearregression.pickle","rb")
 linear = pc.load(pickle_load)
