@@ -1,6 +1,9 @@
 # ML_Basic-
 ******************************************************************************************
 This repository is a trial repository for my first machine learning program with python.
-It prints out the confidence of the system after getting trained by the linear regression
-algorithm.
+The file ML1.py prints out the confidence of the system after getting trained by the linear
+regression algorithm.
+
+Along with it, there is also a small self implemented LinearRegression library without
+the use of Scikit-Learn named as LinearRegression.py.
 *******************************************************************************************
