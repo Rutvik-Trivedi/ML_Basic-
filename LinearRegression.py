@@ -82,18 +82,22 @@ def GradientDescent(x,y,theta,max_iters=1000,alpha=0.01):
     """
     cost_h = []
     m = x.shape[0]
+    l = len(theta)
+    subtract = np.array([])
 
     for i in range(max_iters):
         cost = ComputeCost(x,y,theta)
         cost_h.append(cost)
-        hofx = np.array(np.dot(x,theta),ndmin=1)
-        loss = np.array((hofx - y),ndmin=1)
-        subtract = np.zeros(theta.shape[0])
-        for i in range(theta.shape[0]):
-            subtract[i] = np.sum(x[:,i]*loss) / (2*m)
+        hofx = (x@theta)
+        loss = hofx - y
+
+        for j in range(l):
+            a = np.dot(x[:,j],loss)
+            subtract = np.append(subtract,a)
+
         theta = theta - (alpha*subtract)
-    cost = ComputeCost(x,y,theta)
-    cost_h.append(cost)
+        subtract = np.array([])
+
     return (theta,cost_h)
 
 def Normalization(x,y):
