@@ -14,11 +14,7 @@ Included functions :
 import numpy as np
 import pandas as pd
 import pickle as pkl
-import subprocess as sb
-import shlex as sh
 import os
-
-cwd = os.getcwd()
 
 def preprocessing(x):
     """
@@ -154,71 +150,46 @@ def predict(x_predict,theta):
     y_predict = np.dot(x_predict,theta)
     return y_predict
 
-def Memorize(theta,path=None,pwd=cwd):
+def Memorize(theta,name):
     """
-    Function name : Memorize(theta,path=None,pwd=cwd)
+    Function name : Memorize(theta)
     ***************************************************************************
     Parameters : theta [dtype(numpy.array)]
-                 path = None [dtype(str)]
-                 pwd = cwd [dtype(str)]
+                 name [dtype(string)]
+
     theta : The weights array obtained after the training of the agent.
-    path : Determines the path where to store the weights value. Default : None
-    pwd : Path to current working directory to reset path if required.
-          Default : cwd (path to current working directory)
+            The theta is stored in the present working directory.
+    name : Specifies the name with which the device remembers its experience.
+
     Function saves the value of theta to remember it for future use.
     ***************************************************************************
     """
-    if path!=None:
-        command = "cd "+path
-        command = sh.split(command)
-        sb.call(command)
-    with open("memorize.rut","wb") as f:
-        pkl.dump(theta,f)
-    Reset(pwd)
-    return 1
+    name = name + ".rut"
+    if not os.path.isfile(name):
+        with open(name,"wb") as f:
+            pkl.dump(theta,f)
+        return 1
+    else:
+        name = input("You have already saved a previous training with the similar name. Please choose a unique name : ")
+        Memorize(theta,name)
 
-def Recall(theta,path=None,pwd = cwd):
+def Recall(name):
     """
-    Function name : Recall(theta,path=None,pwd=cwd)
+    Function name : Recall(name)
     ***************************************************************************
-    Parameters : theta [return dtype(numpy.array)]
-                 path = None [dtype(str)]
-                 pwd = cwd
-    theta : The weights array to load the previous training values for
-            further use.
-    path : Specifies from where to get the value of theta. Default : None
-    pwd : Path to current working directory to reset path if required.
-          Default : cwd (path to current working directory)
+    Parameters : name [dtype(string)]
+
+    name : The name with which the experience was stored.
+
     Function loads the values of the weights previously trained and can use it
     for further use.
     ***************************************************************************
     """
-    if path!=None:
-        command = "cd "+path
-        command = sh.split(command)
-        sb.call(command)
+    name = name + ".rut"
     try:
-        with open("memorize.rut","rb") as f:
+        with open(name,"rb") as f:
             theta = pkl.load(f)
-        Reset(pwd)
         return theta
-    except FileNotFoundError:
-        return 0
-
-def Reset(path=None):
-    """
-    Function name : Reset(path=None)
-    ***************************************************************************
-    Parameters : path [dtype(str)]
-    path : Specifies the path of the present working directory.
-    Function changes the present working directory to the specified path.
-    Function required to be called only when Memorize() uses a different path.
-    ***************************************************************************
-    """
-    if path!=None:
-        command = "cd "+path
-        command = sh.split(command)
-        sb.call(command)
-        return 0
-    else:
-        return 0
+    except:
+        print("No such name saved. Error recalling the data.")
+        return None
