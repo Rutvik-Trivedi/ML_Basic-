@@ -201,6 +201,6 @@ def Recall(name):
         with open(name,"rb") as f:
             theta = pkl.load(f)
         return theta
-    except:
+    except FileNotFoundError:
         print("No such name saved. Error recalling the data.")
         return None
