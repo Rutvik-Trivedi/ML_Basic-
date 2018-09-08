@@ -3,12 +3,12 @@ A library for training an agent by the Linear Regression Algorithm.
 Included functions :
     (1) preprocessing(x)
     (2) ComputeCost(x,y,theta)
-    (3) GradientDescent(x,y,theta,max_iters=1000,alpha=0.01)
+    (3) GradientDescent(x,y,theta,max_iters=100,alpha=0.01)
     (4) Normalization(x,y)
     (5) find_confidence(x_test,y_test,theta)
     (6) predict(x,theta)
-    (7) Memorize(theta,path=None,pwd=cwd)
-    (8) Recall(theta,path=None,pwd=cwd)
+    (7) Memorize(theta,name)
+    (8) Recall(name)
 """
 
 import numpy as np
@@ -54,7 +54,7 @@ def ComputeCost(x,y,theta):
     cost = np.sum((np.dot(x,theta)-y) ** 2) / (2*y.shape[0])
     return cost
 
-def GradientDescent(x,y,theta,max_iters=1000,alpha=0.01):
+def GradientDescent(x,y,theta,max_iters=100,alpha=0.01,verbose=False):
     """
     Function name : GradientDescent(x,y,theta,max_iters=1000,alpha=0.01)
     ************************************************************************
@@ -63,14 +63,17 @@ def GradientDescent(x,y,theta,max_iters=1000,alpha=0.01):
                  theta [dtype(numpy.array)]
     Default Parameters : max_iters [dtype(int)]
                          alpha [dtype(float)]
+                         verbose [dtype(bool)]
     x : The feature array including the additional column of all ones.
         Use function 'preprocessing()' to normalize the array and add
         additional column of all ones if not added already.
     y : The label array
     theta : The array of the weights
     max_iters : The maximum numbers of iterations for onr Batch Gradient
-                Descent training. Default = 1000
+                Descent training. Default = 100
     alpha : The Learning Rate. Default = 0.01
+    verbose : Gives the information about the steps it is performing if set to
+              True. Default value is False.
     Function returns the array of the optimized weights to minimize the cost.
     It also returns the value of the cost history i.e. the cost value after
     each iterations.
@@ -82,8 +85,14 @@ def GradientDescent(x,y,theta,max_iters=1000,alpha=0.01):
     subtract = np.array([])
 
     for i in range(max_iters):
+        if verbose:
+            print("Running "+ str(i+1) + " iteration....")
+        if verbose:
+            print("Computing the cost...")
         cost = ComputeCost(x,y,theta)
         cost_h.append(cost)
+        if verbose:
+            print("Determining the weights in " + str(i+1) + " iteration and starting the next iteration......")
         hofx = (x@theta)
         loss = hofx - y
 
@@ -94,6 +103,8 @@ def GradientDescent(x,y,theta,max_iters=1000,alpha=0.01):
         theta = theta - (alpha*subtract)
         subtract = np.array([])
 
+    if verbose:
+        print("Training complete.")
     return (theta,cost_h)
 
 def Normalization(x,y):
