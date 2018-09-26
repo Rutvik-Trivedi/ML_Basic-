@@ -16,21 +16,27 @@ import pandas as pd
 import pickle as pkl
 import os
 
-def preprocessing(x):
+def preprocessing(x, add_ones = True):
     """
     Function name : preprocessing(x)
     ************************************************************************
     Parameters : x [dtype(numpy.array)]
-    Here, x is the feature array excluding the additional array of all ones.
+                 add_ones [dtype(bool)] (Default = True)
+    x : x is the feature array excluding the additional array of all ones.
     After the preprocessing, this function returns a numpy array with the
-    additional array of all ones concatenated automatically.
+    additional array of all ones concatenated automatically if the add_ones
+    parameter is set to true (default=True).
+    add_ones : add_ones is the boolean variable which specifies whether to add
+    the additional column of all ones or not before returning the processed
+    array (Default value is True).
     ************************************************************************
     """
     c_count = np.size(x,1)
     for i in range(c_count):
         x[:,i] = (x[:,i] - x[:,i].mean())/x[:,i].std()
-    x0 = np.array(np.ones(x.shape[0]),ndmin=2)
-    x = np.concatenate((x0.T,x),axis=1)
+    if add_ones:
+        x0 = np.array(np.ones(x.shape[0]),ndmin=2)
+        x = np.concatenate((x0.T,x),axis=1)
     return x
 
 def ComputeCost(x,y,theta):
