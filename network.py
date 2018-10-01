@@ -1,8 +1,6 @@
 import numpy as np
 import pandas as pd
 import random as random
-import _pickle as cPickle
-import gzip
 
 class Network(object):
 
