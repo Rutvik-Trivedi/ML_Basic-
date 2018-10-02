@@ -50,7 +50,7 @@ class Network(object):
     def update_mini_batch(self, mini_batch, alpha): #The main function which updates the weights and biases of the given mini batches
         """Update the network's weights and biases by applying
         gradient descent using backpropagation to a single mini batch.
-        The "mini_batch" is a list of tuples "(x, y)", and "eta"
+        The "mini_batch" is a list of tuples "(x, y)", and "alpha"
         is the learning rate."""
         nabla_b = [np.zeros(b.shape) for b in self.biases]
         nabla_w = [np.zeros(w.shape) for w in self.weights]
@@ -63,7 +63,7 @@ class Network(object):
         self.biases = [b-(alpha/len(mini_batch))*nb
                        for b, nb in zip(self.biases, nabla_b)]
 
-    def backprop(self, x, y):     # Function implementing the backpropagation algorithm
+    def backprop(self, x, y):     # Function implementing the backpropagation algorithm for one training example
         """Return a tuple ``(nabla_b, nabla_w)`` representing the
         gradient for the cost function C_x.  ``nabla_b`` and
         ``nabla_w`` are layer-by-layer lists of numpy arrays, similar
