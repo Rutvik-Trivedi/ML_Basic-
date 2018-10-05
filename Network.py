@@ -66,6 +66,11 @@ class network(object):
             x = sigmoid(np.dot(w, x) + b)
         return x
 
+    def find_result(self, y):
+        y = y.ravel().tolist()
+        maximum = max(y)
+        return y.index(maximum)
+
     def cost_derivative(self,output,y):
         return (output-y)
 
