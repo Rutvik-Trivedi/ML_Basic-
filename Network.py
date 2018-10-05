@@ -84,29 +84,29 @@ class network(object):
         for i, j in zip(self.weights, delta_w):
             i = i - (alpha/len(mini_x))*j
 
-    def backpropagate(self, mini_x, mini_y):    #####################################################
+    def backpropagate(self, mini_x, mini_y):
         nabla_b = [np.zeros(b.shape) for b in self.biases]
         nabla_w = [np.zeros(w.shape) for w in self.weights]
         a = mini_x
         a = self.np_to_list(a)
-        for xexamples, yexamples, l in zip(mini_x, mini_y, range(len(a))):
-            activation = self.reducedim(np.array(xexamples,ndmin=2),alignment = "col")
-            activations = [xexamples]
+        for xexamples, yexamples, count in zip(mini_x, mini_y, range(len(a))):
+            activation = self.reducedim(np.array(xexamples[count]),alignment = "col")
+            activations = [activation]
             zs = []
             for i, j in zip(self.weights, self.biases):
-                activation = np.dot(i, activation[l]) + j
-                zs.append(activation[l])
-                activation = sigmoid(activation[l])
-                activations.append(activation[l])
+                activation = np.dot(i, activation) + j
+                zs.append(activation)
+                activation = sigmoid(activation)
+                activations.append(activation)
             delta = self.cost_derivative(activations[-1], yexamples) * sigmoid_prime(zs[-1])
             nabla_b[-1] = delta
             nabla_w[-1] = np.dot(delta, activations[-2].transpose())
             for l in range(2, self.nlayers):
                 z = zs[-l]
                 sp = sigmoid_prime(z)
-                delta = np.dot(self.weight[-l+1].transpose(), delta) * sp
+                delta = np.dot(self.weights[-l+1].transpose(), delta[count]) * sp
                 nabla_b[-l] = delta
-                nabla_w[-l] = np.dot(delta, activations[-l-1].transpose())
+                nabla_w[-l] = np.dot(delta, np.array(activations[-l-1]).transpose())
         return (nabla_b, nabla_w)
 
 # Miscellaneous functions:
