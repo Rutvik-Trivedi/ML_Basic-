@@ -2,3 +2,4 @@ __pycache__/
 *.pickle
 test.py
 *.rut
+*.ico
