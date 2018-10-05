@@ -69,13 +69,15 @@ class network(object):
     def cost_derivative(self,output,y):
         return (output-y)
 
-    def SGD(self, training_data, mini_batch_size, alpha = 0.01, max_iters = 100):
+    def SGD(self, training_data, mini_batch_size, alpha = 0.01, max_iters = 100, verbose = False):
         l = len(training_data)
         mini_x, mini_y = self.make_mini_batches(training_data,mini_batch_size)
         for iters in range(max_iters):
-            print("Iteration number : {}. Status : Running".format(iters))
+            if verbose:
+                print("Iteration number : {}. Status : Running".format(iters+1))
             self.update_mini_batch(mini_x, mini_y, alpha)
-            print("Iteration number : {}. Status : Complete".format(iters))
+            if verbose:
+                print("Iteration number : {}. Status : Complete".format(iters+1))
 
     def update_mini_batch(self, mini_x, mini_y, alpha):
         delta_b, delta_w = self.backpropagate(mini_x, mini_y)
@@ -132,8 +134,8 @@ class learn(object):
             with open(name,"wb") as f:
                 Cpickle.dump(tuple, f)
 
-    def recall(self, name):
-        name = name + self.extension
+    def recall(self):
+        name = self.training_name + self.extension
         try:
             with open(name, "rb") as f:
                 print("Loading the data.....")
