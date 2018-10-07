@@ -17,25 +17,29 @@ class network(object):
         a = [i for i in x]
         return a
 
-    def reducedim(self, x, alignment = "row"):
+    def reducedim(self, x, alignment = "col"):
+        x = np.ravel(x)
+        x = np.array(x, ndmin=2)
         if alignment == "row":
-            x = np.reshape(x, (1, np.product(x.shape)))
+            return x
         elif alignment == "col":
-            x = np.reshape(x, (np.product(x.shape), 1))
+            x = x.transpose()
+            return x
         else:
             raise ValueException("Parameter 'alignment' has been passed a wrong value")
-        return x
 
     def preprocessing(self, x):
-        for i in x:
-            i = i/255.0
-        return x
+        a = self.np_to_list(x)
+        for count in range(len(a)):
+            a[count] = self.reducedim(a[count], alignment = "col")
+            a[count] = a[count]/255.0
+        return a
 
     def make_array_output(self, y):
         y = [outputs for outputs in y]
         ret = []
+        l = self.size[-1]
         for outputs in y:
-            l = self.size[-1]
             y_out = np.zeros((l,1))
             y_out[outputs] = 1
             ret.append(y_out)
@@ -43,75 +47,76 @@ class network(object):
 
     def separate_x_y(self,training_data):
         x, y = training_data
-        x = [examples for examples in x]
         x = self.preprocessing(x)
         y = self.make_array_output(y)
         return x, y
 
-    def sigmoid(z):
+    def sigmoid(self, z):
         return 1.0/(1.0 + np.exp(-z))
 
-    def sigmoid_prime(z):
+    def sigmoid_prime(self, z):
         return sigmoid(z)*(1-sigmoid(z))
 
     def make_mini_batches(self,training_data, mini_batch_size):
         self.x, self.y = self.separate_x_y(training_data)
-        mini_x = [self.x[k:k+mini_batch_size] for k in range(0,len(training_data),mini_batch_size)]
-        mini_y = [self.y[k:k+mini_batch_size] for k in range(0,len(training_data),mini_batch_size)]
+        l = len(self.x)
+        mini_x = [self.x[k:k+mini_batch_size] for k in range(0,l,mini_batch_size)]
+        mini_y = [self.y[k:k+mini_batch_size] for k in range(0,l,mini_batch_size)]
         return mini_x, mini_y
 
-    def feedforward(self, x):
+    def feedforward(self, x): #Calculates output for one training example at a time
         x = self.reducedim(x, alignment="col")
         for w,b in zip(self.weights, self.biases):
-            x = sigmoid(np.dot(w, x) + b)
+            x = self.sigmoid(np.dot(w, x) + b)
+        x = self.find_result(x)
         return x
 
     def find_result(self, y):
         y = y.ravel().tolist()
         maximum = max(y)
-        return y.index(maximum)
+        return (y.index(maximum)+1) #Generally, we count the neurons from 1
 
-    def cost_derivative(self,output,y):
+    def cost_derivative(self,output,y):  #For only one training example
         return (output-y)
 
-    def SGD(self, training_data, mini_batch_size, alpha = 0.01, max_iters = 100, verbose = False):
-        l = len(training_data)
+    def SGD(self, training_data, mini_batch_size, alpha = 0.01, max_iters = 100, verbose = False): #For all the training examples divided into batches of size mini_batch_size
         mini_x, mini_y = self.make_mini_batches(training_data,mini_batch_size)
         for iters in range(max_iters):
             if verbose:
                 print("Iteration number : {}. Status : Running".format(iters+1))
-            self.update_mini_batch(mini_x, mini_y, alpha)
-            if verbose:
+            for mini_x_, mini_y_ in zip(mini_x, mini_y):
+                self.update_mini_batch(mini_x_, mini_y_, alpha, mini_batch_size)  # Updates one mini batch at a time. This goes for max_iters number of times for all the
+            if verbose:                                                       # mini batches.
                 print("Iteration number : {}. Status : Complete".format(iters+1))
 
-    def update_mini_batch(self, mini_x, mini_y, alpha):
+    def update_mini_batch(self, mini_x, mini_y, alpha, mini_batch_size): #For one Batch of size mini_batch_size
         delta_b, delta_w = self.backpropagate(mini_x, mini_y)
-        for i, j in zip(self.biases, delta_b):
-            i = i - (alpha/len(mini_x))*j
-        for i, j in zip(self.weights, delta_w):
-            i = i - (alpha/len(mini_x))*j
+        for i, j in zip(range(len(self.biases)), range(len(delta_b))):
+            self.biases[i] = self.biases[i] - (alpha/mini_batch_size)*delta_b[j]
+        for i, j in zip(range(len(self.weights)), range(len(delta_w))):
+            self.weights[i] = self.weights[i] - (alpha/mini_batch_size)*delta_w[j]
 
-    def backpropagate(self, mini_x, mini_y):
+    def backpropagate(self, mini_x, mini_y):    ########################################################### Faulty
+        l = len(mini_x)                         # backpropagate works on the mini batch for one training example at a time
         nabla_b = [np.zeros(b.shape) for b in self.biases]
         nabla_w = [np.zeros(w.shape) for w in self.weights]
-        a = mini_x
-        a = self.np_to_list(a)
-        for xexamples, yexamples, count in zip(mini_x, mini_y, range(len(a))):
-            activation = self.reducedim(np.array(xexamples[count]),alignment = "col")
+        for number in range(len(mini_x)):
+            a = mini_x[number]
+            activation = a
             activations = [activation]
             zs = []
             for i, j in zip(self.weights, self.biases):
                 activation = np.dot(i, activation) + j
                 zs.append(activation)
-                activation = sigmoid(activation)
+                activation = self.sigmoid(activation)
                 activations.append(activation)
-            delta = self.cost_derivative(activations[-1], yexamples) * sigmoid_prime(zs[-1])
+            delta = self.cost_derivative(activations[-1], mini_y[number]) * self.sigmoid_prime(zs[-1])
             nabla_b[-1] = delta
             nabla_w[-1] = np.dot(delta, activations[-2].transpose())
             for l in range(2, self.nlayers):
                 z = zs[-l]
-                sp = sigmoid_prime(z)
-                delta = np.dot(self.weights[-l+1].transpose(), delta[count]) * sp
+                sp = self.sigmoid_prime(z)
+                delta = np.dot(self.weights[-l+1].transpose(), delta) * sp
                 nabla_b[-l] = delta
                 nabla_w[-l] = np.dot(delta, np.array(activations[-l-1]).transpose())
         return (nabla_b, nabla_w)
