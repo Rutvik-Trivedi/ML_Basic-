@@ -84,12 +84,13 @@ class network(object):
         for iters in range(max_iters):
             if verbose:
                 print("Iteration number : {}. Status : Running".format(iters+1))
-            for mini_x_, mini_y_ in zip(mini_x, mini_y):
-                self.update_mini_batch(mini_x_, mini_y_, alpha, mini_batch_size)  # Updates one mini batch at a time. This goes for max_iters number of times for all the
-            if verbose:                                                       # mini batches.
+            for xnum, ynum in zip(range(len(mini_x)), range(len(mini_y))):
+                self.update_mini_batch(mini_x[xnum], mini_y[ynum], alpha, mini_batch_size)  # Updates one mini batch at a time. This goes for max_iters number of times for all
+            if verbose:                                                                     # the mini batches.
                 print("Iteration number : {}. Status : Complete".format(iters+1))
 
     def update_mini_batch(self, mini_x, mini_y, alpha, mini_batch_size): #For one Batch of size mini_batch_size
+        delta_b, delta_w = ([np.zeros(b.shape) for b in self.biases], [np.zeros(w.shape) for w in self.weights])
         delta_b, delta_w = self.backpropagate(mini_x, mini_y)
         for i, j in zip(range(len(self.biases)), range(len(delta_b))):
             self.biases[i] = self.biases[i] - (alpha/mini_batch_size)*delta_b[j]
