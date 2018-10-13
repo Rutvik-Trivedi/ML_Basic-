@@ -2,6 +2,9 @@ import numpy as np
 import _pickle as Cpickle
 import os
 
+# Here data will be a tuple of three-D (two-D for one training example and a third dimension for number of examples) array of 'x' and a one-D array of 'y'(one output for
+# each example)
+
 class network(object):
 
     def __init__(self, *size):
@@ -17,7 +20,7 @@ class network(object):
         a = [i for i in x]
         return a
 
-    def reducedim(self, x, alignment = "col"):
+    def reducedim(self, x, alignment = "col"): # converting to (a,1) shaped array
         x = np.ravel(x)
         x = np.array(x, ndmin=2)
         if alignment == "row":
@@ -32,7 +35,6 @@ class network(object):
         a = self.np_to_list(x)
         for count in range(len(a)):
             a[count] = self.reducedim(a[count], alignment = "col")
-            a[count] = a[count]/255.0
         return a
 
     def make_array_output(self, y):
@@ -82,15 +84,12 @@ class network(object):
     def SGD(self, training_data, mini_batch_size, alpha = 0.01, max_iters = 100, verbose = False): #For all the training examples divided into batches of size mini_batch_size
         mini_x, mini_y = self.make_mini_batches(training_data,mini_batch_size)
         for iters in range(max_iters):
-            if verbose:
-                print("Iteration number : {}. Status : Running".format(iters+1))
             for xnum, ynum in zip(range(len(mini_x)), range(len(mini_y))):
                 self.update_mini_batch(mini_x[xnum], mini_y[ynum], alpha, mini_batch_size)  # Updates one mini batch at a time. This goes for max_iters number of times for all
             if verbose:                                                                     # the mini batches.
-                print("Iteration number : {}. Status : Complete".format(iters+1))
+                print("Iteration number : {}  Status : Complete".format(iters+1))
 
     def update_mini_batch(self, mini_x, mini_y, alpha, mini_batch_size): #For one Batch of size mini_batch_size
-        delta_b, delta_w = ([np.zeros(b.shape) for b in self.biases], [np.zeros(w.shape) for w in self.weights])
         delta_b, delta_w = self.backpropagate(mini_x, mini_y)
         for i, j in zip(range(len(self.biases)), range(len(delta_b))):
             self.biases[i] = self.biases[i] - (alpha/mini_batch_size)*delta_b[j]
@@ -102,8 +101,7 @@ class network(object):
         nabla_b = [np.zeros(b.shape) for b in self.biases]
         nabla_w = [np.zeros(w.shape) for w in self.weights]
         for number in range(len(mini_x)):
-            a = mini_x[number]
-            activation = a
+            activation = mini_x[number]
             activations = [activation]
             zs = []
             for i, j in zip(self.weights, self.biases):
@@ -111,15 +109,17 @@ class network(object):
                 zs.append(activation)
                 activation = self.sigmoid(activation)
                 activations.append(activation)
-            delta = self.cost_derivative(activations[-1], mini_y[number]) * self.sigmoid_prime(zs[-1])
+            delta = np.sum(self.cost_derivative(activations[-1], mini_y[number])) * self.sigmoid_prime(zs[-1])
             nabla_b[-1] = delta
-            nabla_w[-1] = np.dot(delta, activations[-2].transpose())
-            for l in range(2, self.nlayers):
+            nabla_w[-1] = delta * np.array(activations[-2]).transpose()
+            #print(activation[-2].shape)
+            for l in range(2, self.nlayers):   #################
                 z = zs[-l]
                 sp = self.sigmoid_prime(z)
-                delta = np.dot(self.weights[-l+1].transpose(), delta) * sp
+                delta = np.dot(self.weights[-l+1], delta) * sp
                 nabla_b[-l] = delta
-                nabla_w[-l] = np.dot(delta, np.array(activations[-l-1]).transpose())
+                nabla_w[-l] = delta * activations[-l-1].transpose()  ############
+                #print(activations[-l-1].shape)
         return (nabla_b, nabla_w)
 
 # Miscellaneous functions:
@@ -133,20 +133,19 @@ class learn(object):
 
     def __init__(self, name):
         self.training_name = name
-        self.extension = ".rut"
 
     def memorize(self, weights, biases):
-        name = self.training_name + self.extension
+        name = self.training_name + ".rut"
         if os.path.isfile(name):
             self.training_name = input("Training of a similar name already exists. Please choose another name : ")
-            self.memorise(weights, biases)
+            self.memorize(weights, biases)
         else:
             tuple = (weights, biases)
             with open(name,"wb") as f:
                 Cpickle.dump(tuple, f)
 
     def recall(self):
-        name = self.training_name + self.extension
+        name = self.training_name + ".rut"
         try:
             with open(name, "rb") as f:
                 print("Loading the data.....")
