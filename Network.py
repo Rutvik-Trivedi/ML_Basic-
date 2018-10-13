@@ -2,7 +2,7 @@ import numpy as np
 import _pickle as Cpickle
 import os
 
-# Here data will be a tuple of three-D (two-D for one training example and a third dimension for number of examples) array of 'x' and a one-D array of 'y'(one output for
+# Here data will be a tuple of three-D (two-D for one training example and a third dimension for number of examples) array of 'x' and a one-D array of 'y' (one output for
 # each example)
 
 class network(object):
@@ -35,10 +35,10 @@ class network(object):
         a = self.np_to_list(x)
         for count in range(len(a)):
             a[count] = self.reducedim(a[count], alignment = "col")
+            a[count] = a[count]/255.0
         return a
 
     def make_array_output(self, y):
-        y = [outputs for outputs in y]
         ret = []
         l = self.size[-1]
         for outputs in y:
@@ -93,11 +93,10 @@ class network(object):
         delta_b, delta_w = self.backpropagate(mini_x, mini_y)
         for i, j in zip(range(len(self.biases)), range(len(delta_b))):
             self.biases[i] = self.biases[i] - (alpha/mini_batch_size)*delta_b[j]
-        for i, j in zip(range(len(self.weights)), range(len(delta_w))):
             self.weights[i] = self.weights[i] - (alpha/mini_batch_size)*delta_w[j]
 
-    def backpropagate(self, mini_x, mini_y):    ########################################################### Faulty
-        l = len(mini_x)                         # backpropagate works on the mini batch for one training example at a time
+    def backpropagate(self, mini_x, mini_y):    # backpropagate works on the mini batch for one training example at a time
+        l = len(mini_x)
         nabla_b = [np.zeros(b.shape) for b in self.biases]
         nabla_w = [np.zeros(w.shape) for w in self.weights]
         for number in range(len(mini_x)):
@@ -109,17 +108,15 @@ class network(object):
                 zs.append(activation)
                 activation = self.sigmoid(activation)
                 activations.append(activation)
-            delta = np.sum(self.cost_derivative(activations[-1], mini_y[number])) * self.sigmoid_prime(zs[-1])
-            nabla_b[-1] = delta
+            delta = self.cost_derivative(activations[-1], mini_y[number]) * self.sigmoid_prime(zs[-1])
             nabla_w[-1] = delta * np.array(activations[-2]).transpose()
-            #print(activation[-2].shape)
-            for l in range(2, self.nlayers):   #################
+            nabla_b[-1] = delta
+            for l in range(2, self.nlayers):
                 z = zs[-l]
                 sp = self.sigmoid_prime(z)
-                delta = np.dot(self.weights[-l+1], delta) * sp
+                delta = np.dot(self.weights[-l+1].transpose(), delta) * sp
+                nabla_w[-l] = delta * activations[-l-1].transpose()
                 nabla_b[-l] = delta
-                nabla_w[-l] = delta * activations[-l-1].transpose()  ############
-                #print(activations[-l-1].shape)
         return (nabla_b, nabla_w)
 
 # Miscellaneous functions:
