@@ -8,5 +8,5 @@ Along with it, there is also a small self implemented LinearRegression library w
 the use of Scikit-Learn named as LinearRegression.py.
 
 Moreover, a self implemented neural network class is also added called Network.py
-Presently, it is not tested, so may have some flaws.
+It has been updated multiple times to get a satisfactory result. 
 *******************************************************************************************

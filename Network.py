@@ -1,11 +1,18 @@
 import numpy as np
 import _pickle as Cpickle
+import random
 import os
 
 # Here data will be a tuple of three-D (two-D for one training example and a third dimension for number of examples) array of 'x' and a one-D array of 'y' (one output for
 # each example)
 
 class network(object):
+
+    entertain = ["Wow! Learning is fun!", "What a busy day!", "Do not disturb. Using my brain right now.",
+                 "This one was tough", "Ohh! I think that's the answer", "Yeah, whatever...",
+                 "What the heck! Didn't expect that answer!", "Yeah, got that right", "Hey, did you know this?",
+                 "That was a real fun fact", "Maybe I should have some rest. Shouldn't I?", "I think my brain works really fast",
+                 "I hope I pass in the tests", "Train hard. Tests are on their way", "Will the tests be open book?"]
 
     def __init__(self, *size):
         self.nlayers = len(size)
@@ -81,13 +88,19 @@ class network(object):
     def cost_derivative(self,output,y):  #For only one training example
         return (output-y)
 
-    def SGD(self, training_data, mini_batch_size, alpha = 0.01, max_iters = 100, verbose = False): #For all the training examples divided into batches of size mini_batch_size
+    def SGD(self, training_data, mini_batch_size, alpha = 0.01, max_iters = 100, verbose = None): #For all the training examples divided into batches of size mini_batch_size
         mini_x, mini_y = self.make_mini_batches(training_data,mini_batch_size)
         for iters in range(max_iters):
             for xnum, ynum in zip(range(len(mini_x)), range(len(mini_y))):
                 self.update_mini_batch(mini_x[xnum], mini_y[ynum], alpha, mini_batch_size)  # Updates one mini batch at a time. This goes for max_iters number of times for all
-            if verbose:                                                                     # the mini batches.
+            if verbose == "normal":                                                         # the mini batches.
                 print("Iteration number : {}  Status : Complete".format(iters+1))
+            elif verbose == "entertain":
+                print(random.choice(network.entertain))
+        if verbose == "normal":
+            print("Training Complete.")
+        elif verbose == "entertain":
+            print("Completed finally. Now I got to know how Albert Einstein must have felt")
 
     def update_mini_batch(self, mini_x, mini_y, alpha, mini_batch_size): #For one Batch of size mini_batch_size
         delta_b, delta_w = self.backpropagate(mini_x, mini_y)
@@ -126,18 +139,31 @@ def sigmoid(z):
 def sigmoid_prime(z):
     return sigmoid(z)*(1.0-sigmoid(z))
 
+def feedforward(x, weights, biases):
+    x = network.reducedim(network, x = x, alignment="col")
+    for w,b in zip(weights, biases):
+        x = np.dot(w, x) + b
+    x = find_result(x)
+    return x
+
+def find_result(y):
+    y = y.ravel().tolist()
+    maximum = max(y)
+    return (y.index(maximum)+1)
+
+
 class learn(object):
 
     def __init__(self, name):
         self.training_name = name
 
-    def memorize(self, weights, biases):
+    def memorize(self, size, weights, biases):
         name = self.training_name + ".rut"
         if os.path.isfile(name):
             self.training_name = input("Training of a similar name already exists. Please choose another name : ")
-            self.memorize(weights, biases)
+            self.memorize(size, weights, biases)
         else:
-            tuple = (weights, biases)
+            tuple = (size, weights, biases)
             with open(name,"wb") as f:
                 Cpickle.dump(tuple, f)
 
@@ -146,9 +172,9 @@ class learn(object):
         try:
             with open(name, "rb") as f:
                 print("Loading the data.....")
-                (weights, biases) = Cpickle.load(f)
+                (size, weights, biases) = Cpickle.load(f)
                 print("Data loaded")
-            return (weights,biases)
+            return (size, weights, biases)
         except FileNotFoundError:
             print("Error loading data. Training of the specified name does not exist.")
             return None
