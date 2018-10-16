@@ -73,10 +73,11 @@ class network(object):
         mini_y = [self.y[k:k+mini_batch_size] for k in range(0,l,mini_batch_size)]
         return mini_x, mini_y
 
-    def feedforward(self, x): #Calculates output for one training example at a time
-        x = self.reducedim(x, alignment="col")
+    def feedforward(self, x, reduce_dim = True): #Calculates output for one training example at a time
+        if reduce_dim:
+            x = self.reducedim(x, alignment="col")
         for w,b in zip(self.weights, self.biases):
-            x = self.sigmoid(np.dot(w, x) + b)
+            x = np.dot(w, x) + b
         x = self.find_result(x)
         return x
 
