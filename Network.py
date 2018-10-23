@@ -50,7 +50,7 @@ class network(object):
         l = self.size[-1]
         for outputs in y:
             y_out = np.zeros((l,1))
-            y_out[outputs] = 1
+            y_out[outputs-1] = 1
             ret.append(y_out)
         return ret
 
@@ -77,7 +77,7 @@ class network(object):
         if reduce_dim:
             x = self.reducedim(x, alignment="col")
         for w,b in zip(self.weights, self.biases):
-            x = np.dot(w, x) + b
+            x = self.sigmoid(np.dot(w, x) + b)
         x = self.find_result(x)
         return x
 
@@ -89,7 +89,7 @@ class network(object):
     def cost_derivative(self,output,y):  #For only one training example
         return (output-y)
 
-    def SGD(self, training_data, mini_batch_size, alpha = 0.01, max_iters = 100, verbose = None): #For all the training examples divided into batches of size mini_batch_size
+    def fit(self, training_data, mini_batch_size, alpha = 0.01, max_iters = 100, verbose = None): #For all the training examples divided into batches of size mini_batch_size
         mini_x, mini_y = self.make_mini_batches(training_data,mini_batch_size)
         for iters in range(max_iters):
             for xnum, ynum in zip(range(len(mini_x)), range(len(mini_y))):
@@ -143,7 +143,7 @@ def sigmoid_prime(z):
 def feedforward(x, weights, biases):
     x = network.reducedim(network, x = x, alignment="col")
     for w,b in zip(weights, biases):
-        x = np.dot(w, x) + b
+        x = sigmoid(np.dot(w, x) + b)
     x = find_result(x)
     return x
 
