@@ -4,3 +4,4 @@ test*.py
 *.rut
 *.ico
 train*.py
+asl-alphabet/
