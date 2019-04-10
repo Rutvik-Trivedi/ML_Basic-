@@ -58,6 +58,4 @@ def load_data(load_train=True, load_test=True):
 
         print("Data Loaded.............")
 
-        return (x_train,y_train,x_test,y_test)
-
-    return (x_train, y_train)
+    return (x_train,y_train,x_test,y_test)
